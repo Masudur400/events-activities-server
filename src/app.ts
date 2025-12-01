@@ -6,6 +6,9 @@ import cors from 'cors'
 // import { envVars } from './app/config/env'
 import cookieParser from 'cookie-parser' 
 import { envVars } from './app/config/env'
+import notFound from './app/middlewares/notFound'
+import { globalErrorHandler } from './app/middlewares/globalErrorHandler'
+import { router } from './app/routes'
 
 
 const app = express()
@@ -29,9 +32,7 @@ app.use(cors({
 
 
 
-// app.use('/api', router)
-
-
+app.use('/api', router) 
 
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({
@@ -39,8 +40,8 @@ app.get('/', (req: Request, res: Response) => {
     })
 })
 
-// app.use(globalErrorHandler)
-// app.use(notFound)
+app.use(globalErrorHandler)
+app.use(notFound)
 
 
 

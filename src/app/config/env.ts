@@ -5,12 +5,35 @@ dotenv.config()
 interface EnvConfig {
     PORT: string
     DB_URL: string
-    NODE_ENV: 'development' | 'production' 
-    FRONTEND_URL: string 
+    NODE_ENV: 'development' | 'production'
+    FRONTEND_URL: string
+    BCRYPT_SALT_ROUND: string
+
+    SUPER_ADMIN_EMAIL: string
+    SUPER_ADMIN_PASSWORD: string
+
+    ACCESS_SECRET: string
+    ACCESS_EXPIRES: string
+    REFRESH_SECRET: string
+    REFRESH_EXPIRES: string
 }
 
 const loadEnvVariables = (): EnvConfig => {
-    const requiredEnvVariables: string[] = ["PORT", "DB_URL", "NODE_ENV","FRONTEND_URL"]
+    const requiredEnvVariables: string[] = [
+        "PORT",
+        "DB_URL",
+        "NODE_ENV",
+        "FRONTEND_URL",
+        "BCRYPT_SALT_ROUND",
+
+        "SUPER_ADMIN_EMAIL",
+        "SUPER_ADMIN_PASSWORD",
+
+        "ACCESS_SECRET",
+        "ACCESS_EXPIRES",
+        "REFRESH_SECRET",
+        "REFRESH_EXPIRES"
+    ]
     requiredEnvVariables.forEach(key => {
         if (!process.env[key]) {
             throw new Error(`missing require env variable ${key}`)
@@ -19,8 +42,17 @@ const loadEnvVariables = (): EnvConfig => {
     return {
         PORT: process.env.PORT as string,
         DB_URL: process.env.DB_URL as string,
-        NODE_ENV: process.env.NODE_ENV as 'development' | 'production', 
-        FRONTEND_URL: process.env.FRONTEND_URL as string, 
+        NODE_ENV: process.env.NODE_ENV as 'development' | 'production',
+        FRONTEND_URL: process.env.FRONTEND_URL as string,
+        BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
+
+        SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
+        SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
+
+        ACCESS_SECRET: process.env.ACCESS_SECRET as string,
+        ACCESS_EXPIRES: process.env.ACCESS_EXPIRES as string,
+        REFRESH_SECRET: process.env.REFRESH_SECRET as string,
+        REFRESH_EXPIRES: process.env.REFRESH_EXPIRES as string,
     }
 }
 
