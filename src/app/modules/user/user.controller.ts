@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express"
 import { catchAsync } from "../../utils/catchAsync"
 import { sendResponse } from "../../utils/sendResponse"
 import httpStatus from "http-status"
-import { UserServices } from "./user.service" 
+import { UserServices } from "./user.service"
 import { setAuthCookie } from "../../utils/setCookies"
 import { JwtPayload } from "jsonwebtoken"
 import AppError from "../../errorHandler/AppError"
+import { Role } from "./user.interface"
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
-    const { user, tokens } = await UserServices.createUser(req.body) 
-    setAuthCookie(res, tokens) 
+    const { user, tokens } = await UserServices.createUser(req.body)
+    setAuthCookie(res, tokens)
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
@@ -24,19 +27,28 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 
 
 const createHost = catchAsync(async (req: Request, res: Response) => {
-    const user = await UserServices.createHost(req.body) 
+    let parsedData = {};
+    if (req.body.data) {
+        parsedData = JSON.parse(req.body.data);
+    }
+    const payload = {
+        ...parsedData,
+        picture: req.file?.path,
+    };
+    const result = await UserServices.createHost(payload);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
         message: "User Created Successfully",
-        data: user,
-    })
-})
+        data: result,
+    });
+});
 
-const getAllUser = catchAsync(async(req, res) => {
+
+
+const getAllUser = catchAsync(async (req, res) => {
     const query = req.query;
     const result = await UserServices.getAllUsers(query as Record<string, string>);
-
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -49,10 +61,10 @@ const getAllUser = catchAsync(async(req, res) => {
 
 const getSingleUser = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id;
-    const result = await UserServices.getSingleUser(id); 
+    const result = await UserServices.getSingleUser(id);
     if (!result.user) {
         throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
-    } 
+    }
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -64,8 +76,8 @@ const getSingleUser = catchAsync(async (req: Request, res: Response) => {
 
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-    const decodedToken = req.user as JwtPayload; 
-    const result = await UserServices.getMe(decodedToken.id); 
+    const decodedToken = req.user as JwtPayload;
+    const result = await UserServices.getMe(decodedToken.id);
     if (!result.data) {
         throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
     }
@@ -78,10 +90,72 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+
+const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+    let payload: any = {};
+    if (req.body.data) {
+        try {
+            payload = JSON.parse(req.body.data);
+        } catch (err) {
+            throw new AppError(httpStatus.BAD_REQUEST, "Invalid JSON in 'data'");
+        }
+    }
+    if (req.file?.path) {
+        payload.picture = req.file.path;
+    }
+    const updatedUser = await UserServices.updateMyProfile(userId, payload);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Profile updated successfully",
+        data: updatedUser,
+    });
+});
+
+
+
+
+
+const updateUserByAdmin = catchAsync(async (req: Request, res: Response) => {
+    const adminRole = req.user?.role;
+    if (adminRole !== Role.SUPER_ADMIN) {
+        res.status(httpStatus.UNAUTHORIZED).json({
+            success: false,
+            message: "Only SUPER_ADMIN can update user status",
+        });
+        return;
+    }
+    const userId = req.params.id; // admin update target user
+    if (!userId) {
+        res.status(httpStatus.BAD_REQUEST).json({
+            success: false,
+            message: "User ID is required",
+        });
+        return;
+    }
+    const payload = req.body; // Only isDeleted, isActive, isVerified 
+    const updatedUser = await UserServices.updateUserByAdmin(userId, payload);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "User updated successfully",
+        data: updatedUser,
+    });
+});
+
+
+
+
 export const userControllers = {
     createUser,
     createHost,
     getAllUser,
     getSingleUser,
     getMe,
+    updateMyProfile,
+    updateUserByAdmin
 }

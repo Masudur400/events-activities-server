@@ -37,22 +37,35 @@ const createUser = async (payload: Partial<IUser>) => {
 
 
 const createHost = async (payload: Partial<IUser>) => {
-    const { email, password, ...rest } = payload
-    const isUserExist = await User.findOne({ email })
-    if (isUserExist) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User already exist !")
+    const { email, password, ...rest } = payload;
+    if (!email) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Email is required!");
     }
-    const hashedPassword = await bcryptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
-    const authProvider: IAuthProvider = { provider: 'credentials', providerId: email as string }
+    if (!password) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Password is required!");
+    }
+    const isUserExist = await User.findOne({ email });
+    if (isUserExist) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User already exists!");
+    }
+    const hashedPassword = await bcryptjs.hash(
+        password,
+        Number(envVars.BCRYPT_SALT_ROUND)
+    );
+    const authProvider: IAuthProvider = {
+        provider: "credentials",
+        providerId: email,
+    };
     const user = await User.create({
         email,
         password: hashedPassword,
         auths: [authProvider],
         role: Role.HOST,
-        ...rest
-    })
-    return user
-}
+        ...rest,
+    });
+    return user;
+};
+
 
 
 
@@ -88,10 +101,44 @@ const getMe = async (userId: string) => {
     }
 }
 
+
+
+const updateMyProfile = async (userId: string, payload: Partial<IUser>) => {
+    const user = await User.findById(userId);
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    const allowedFields: (keyof IUser)[] = ["name", "phone", "address", "picture"];
+    for (const field of allowedFields) {
+        if (payload[field] !== undefined) {
+            user.set(field, payload[field]);
+        }
+    }
+    await user.save();
+    return user;
+};
+
+
+
+const updateUserByAdmin = async (userId: string, payload: Partial<IUser>) => {
+    const user = await User.findById(userId);
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    const allowedFields: (keyof IUser)[] = ["isDeleted", "isActive", "isVerified"];
+    allowedFields.forEach((field) => {
+        if (payload[field] !== undefined) {
+            user.set(field, payload[field]);
+        }
+    });
+    await user.save();
+    return user;
+};
+
+
+
 export const UserServices = {
     createUser,
     createHost,
     getAllUsers,
     getSingleUser,
     getMe,
+    updateMyProfile,
+    updateUserByAdmin
 }
