@@ -11,11 +11,9 @@ const storage = new CloudinaryStorage({
         .replace(/\.[^/.]+$/, "")     // remove extension
         .replace(/\s+/g, "-")         // replace spaces
         // eslint-disable-next-line no-useless-escape
-        .replace(/[^a-z0-9\-]/g, ""); // sanitize
-
+        .replace(/[^a-z0-9\-]/g, ""); // sanitize 
       const uniqueName =
-        `${Math.random().toString(36).substring(2)}-${Date.now()}-${baseName}`;
-
+        `${Math.random().toString(36).substring(2)}-${Date.now()}-${baseName}`; 
       return uniqueName;  // ❗ NO EXTENSION HERE
     }
   }

@@ -10,10 +10,11 @@ export enum EventStatus {
 export interface IEvent {
   _id?: Types.ObjectId;
   eventName: string;
-  eventType: string; // e.g., Concert, Hike, Dinner
+  eventType: string; 
+  hostId: Types.ObjectId
   date: Date;
-  startTime: string; // HH:mm format
-  endTime: string;   // HH:mm format
+  startTime: string;  
+  endTime: string;   
   minParticipants: number;
   maxParticipants: number;
   description?: string;

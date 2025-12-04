@@ -6,6 +6,7 @@ const eventSchema = new Schema<IEvent>(
     eventName: { type: String, required: true },
     eventType: { type: String, required: true },
     date: { type: Date, required: true },
+    hostId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
     minParticipants: { type: Number, required: true },

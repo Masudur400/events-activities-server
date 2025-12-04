@@ -22,6 +22,7 @@ export interface IAuthProvider {
 
 export interface IUser {
     _id?: Types.ObjectId
+    bio?: string
     name: string
     email: string
     password?: string
@@ -33,7 +34,8 @@ export interface IUser {
     isVerified?: boolean
     role: Role
     auths: IAuthProvider[]
-    bookings?: Types.ObjectId[] 
+    // bookings?: Types.ObjectId[] 
+    // payments?: Types.ObjectId[] 
     createAt?: Date
     updatedAt?:Date 
 }

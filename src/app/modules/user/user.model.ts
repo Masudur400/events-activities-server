@@ -16,6 +16,7 @@ const authProviderSchema = new Schema<IAuthProvider>({
 const userSchema = new Schema<IUser>({
     name: { type: String, required: true },
     email: { type: String, required: true },
+    bio: { type: String, required: false, default:null },
     password: { type: String },
     role: { type: String, enum: Object.values(Role), default: Role.USER },
     phone: { type: String, default: null },
@@ -25,13 +26,19 @@ const userSchema = new Schema<IUser>({
     isActive: { type: String, enum: Object.values(IsActive), default: IsActive.ACTIVE },
     isVerified: { type: Boolean, default: true },
     auths: [authProviderSchema],
-    bookings: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "bookings",
-        }
-    ],
- 
+    // bookings: [
+    //     {
+    //         type: Schema.Types.ObjectId,
+    //         ref: "bookings",
+    //     }
+    // ],
+    // payments: [
+    //     {
+    //         type: Schema.Types.ObjectId,
+    //         ref: "payments",
+    //     }
+    // ],
+
 
 }, {
     timestamps: true,
@@ -40,11 +47,11 @@ const userSchema = new Schema<IUser>({
 
 
 // bookings field removed for all role with out USER role 
-export interface IUserDocument extends IUser, Document {} 
-userSchema.pre("save", async function (this: IUserDocument) {
-  if (this.role !== Role.USER) {
-    this.bookings = undefined; // remove for non-users
-  }
-});
+// export interface IUserDocument extends IUser, Document { }
+// userSchema.pre("save", async function (this: IUserDocument) {
+//     if (this.role !== Role.USER) {
+//         this.bookings = undefined; // remove for non-users
+//     }
+// });
 
 export const User = model<IUser>('User', userSchema)

@@ -3,17 +3,21 @@ import { userControllers } from "./user.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "./user.interface";
 import { multerUpload } from "../../config/multer.config";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 
 
 
 const router = Router()
 
 router.post('/register',
+    validateRequest(createUserZodSchema),
     userControllers.createUser)
 
 router.post('/create-host',
     checkAuth(Role.SUPER_ADMIN),
     multerUpload.single('file'),
+    validateRequest(createUserZodSchema),
     userControllers.createHost)
 
 router.get('/all-users',
@@ -24,14 +28,19 @@ router.get("/me",
     checkAuth(...Object.values(Role)),
     userControllers.getMe)
 
-router.patch("/update-profile",
+router.patch(
+    "/update-profile",
     checkAuth(...Object.values(Role)),
-    multerUpload.single('file'),
-    userControllers.updateMyProfile)
+    multerUpload.single('file'),          
+    validateRequest(updateUserZodSchema), 
+    userControllers.updateMyProfile       
+);
+
 
 
 router.patch("/:id",
     checkAuth(Role.SUPER_ADMIN),
+    validateRequest(updateUserZodSchema),
     userControllers.updateUserByAdmin)
 
 router.get("/:id",

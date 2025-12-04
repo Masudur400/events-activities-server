@@ -8,7 +8,7 @@ import { UserServices } from "./user.service"
 import { setAuthCookie } from "../../utils/setCookies"
 import { JwtPayload } from "jsonwebtoken"
 import AppError from "../../errorHandler/AppError"
-import { Role } from "./user.interface"
+import { IUser, Role } from "./user.interface"
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
     const { user, tokens } = await UserServices.createUser(req.body)
@@ -27,15 +27,13 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 
 
 const createHost = catchAsync(async (req: Request, res: Response) => {
-    let parsedData = {};
-    if (req.body.data) {
-        parsedData = JSON.parse(req.body.data);
-    }
     const payload = {
-        ...parsedData,
-        picture: req.file?.path,
+        ...req.body, // validated data from validateRequest
+        picture: req.file?.path, // photo path
     };
+
     const result = await UserServices.createHost(payload);
+
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
@@ -92,29 +90,27 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    if (!userId) {
-        throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized");
-    }
-    let payload: any = {};
-    if (req.body.data) {
-        try {
-            payload = JSON.parse(req.body.data);
-        } catch (err) {
-            throw new AppError(httpStatus.BAD_REQUEST, "Invalid JSON in 'data'");
-        }
-    }
-    if (req.file?.path) {
-        payload.picture = req.file.path;
-    }
-    const updatedUser = await UserServices.updateMyProfile(userId, payload);
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "Profile updated successfully",
-        data: updatedUser,
-    });
+  const userId = req.user?.id;
+  if (!userId) throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized");
+
+  // validated data from Zod
+  const payload: Partial<IUser> = { ...req.body };
+
+  // multer file
+  if (req.file?.path) {
+    payload.picture = req.file.path;
+  }
+
+  const updatedUser = await UserServices.updateMyProfile(userId, payload);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Profile updated successfully",
+    data: updatedUser,
+  });
 });
+
 
 
 
