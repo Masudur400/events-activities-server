@@ -11,13 +11,13 @@ import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 const router = Router()
 
 router.post('/register',
-    validateRequest(createUserZodSchema),
+    validateRequest(createUserZodSchema), //(optional --> just for form data validation)
     userControllers.createUser)
 
 router.post('/create-host',
     checkAuth(Role.SUPER_ADMIN),
     multerUpload.single('file'),
-    validateRequest(createUserZodSchema),
+    validateRequest(createUserZodSchema), //(optional --> just for form data validation)
     userControllers.createHost)
 
 router.get('/all-users',
@@ -32,7 +32,7 @@ router.patch(
     "/update-profile",
     checkAuth(...Object.values(Role)),
     multerUpload.single('file'),          
-    validateRequest(updateUserZodSchema), 
+    validateRequest(updateUserZodSchema),  //(optional --> just for form data validation)
     userControllers.updateMyProfile       
 );
 

@@ -16,11 +16,14 @@ export interface IEvent {
   startTime: string;  
   endTime: string;   
   minParticipants: number;
+  bookedParticipants?: number
   maxParticipants: number;
   description?: string;
   image?: string;
-  joiningFee?: number;
+  joiningFee: number;
   status: EventStatus;
+  totalReviews?:number
+  avgRating?: number
   createdAt?: Date;
   updatedAt?: Date;
 }

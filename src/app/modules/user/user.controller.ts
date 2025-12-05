@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express"
 import { catchAsync } from "../../utils/catchAsync"
 import { sendResponse } from "../../utils/sendResponse"
@@ -90,29 +88,22 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  if (!userId) throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized");
-
-  // validated data from Zod
-  const payload: Partial<IUser> = { ...req.body };
-
-  // multer file
-  if (req.file?.path) {
-    payload.picture = req.file.path;
-  }
-
-  const updatedUser = await UserServices.updateMyProfile(userId, payload);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Profile updated successfully",
-    data: updatedUser,
-  });
+    const userId = req.user?.id;
+    if (!userId) throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized");
+    // validated data from Zod
+    const payload: Partial<IUser> = { ...req.body };
+    // multer file
+    if (req.file?.path) {
+        payload.picture = req.file.path;
+    }
+    const updatedUser = await UserServices.updateMyProfile(userId, payload);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Profile updated successfully",
+        data: updatedUser,
+    });
 });
-
-
-
 
 
 

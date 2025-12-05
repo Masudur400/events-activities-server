@@ -7,6 +7,7 @@ import { envVars } from "../../config/env"
 import { setTokens } from "../../utils/setTokens"
 import { userSearchableFields } from "./user.constents"
 import { QueryBuilder } from "../../utils/queryBuilder"
+import { deleteImageFromCLoudinary } from "../../config/cloudinary.config"
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload
@@ -75,7 +76,7 @@ const createHost = async (payload: Partial<IUser>): Promise<IUser> => {
 
 
 const getAllUsers = async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(User.find(), query)
+    const queryBuilder = new QueryBuilder(User.find().select('-password'), query)
         .filter()
         .search(userSearchableFields)
         .sort()
@@ -108,17 +109,21 @@ const getMe = async (userId: string) => {
 
 
 
-const updateMyProfile = async (userId: string, payload: Partial<IUser>) => {
+const updateMyProfile = async (userId: string, payload: Partial<IUser>): Promise<IUser> => {
   const user = await User.findById(userId);
-  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
-
-  const allowedFields: (keyof IUser)[] = ["name", "phone", "address", "picture", "bio"];
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found"); 
+  const allowedFields: (keyof IUser)[] = ["name", "phone", "address", "picture", "bio"]; 
+  // যদি নতুন ছবি আসে এবং আগের picture থাকে
+  if (payload.picture && user.picture) {
+    // আগের ছবি delete
+    await deleteImageFromCLoudinary(user.picture);
+  } 
+  // update allowed fields
   for (const field of allowedFields) {
     if (payload[field] !== undefined) {
       user.set(field, payload[field]);
     }
-  }
-
+  } 
   await user.save();
   return user;
 };
