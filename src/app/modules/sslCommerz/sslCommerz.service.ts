@@ -21,8 +21,8 @@ const sslPaymentInit = async (payload: ISSLCommerz) => {
             cancel_url: `${envVars.SSL_CANCEL_BACKEND_URL}?transactionId=${payload.transactionId}&amount=${payload.amount}&status=cancel`,
             ipn_url: envVars.SSL_IPN_URL,
             shipping_method: "N/A",
-            product_name: "Tour",
-            product_category: "Service",
+            product_name: "Event",
+            product_category: "Event & Activity",
             product_profile: "general",
             cus_name: payload.name,
             cus_email: payload.email,
@@ -53,7 +53,7 @@ const sslPaymentInit = async (payload: ISSLCommerz) => {
         return response.data;
 
     } catch (error: any) {
-        console.log("Payment Error Occured", error);
+        console.log("Payment Error Occurred", error);
         throw new AppError(httpStatus.BAD_REQUEST, error.message)
     }
 }

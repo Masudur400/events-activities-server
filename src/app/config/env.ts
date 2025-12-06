@@ -35,6 +35,14 @@ interface EnvConfig {
     SSL_SUCCESS_BACKEND_URL: string
     SSL_FAIL_BACKEND_URL: string
     SSL_CANCEL_BACKEND_URL: string
+
+    SMTP_HOST: string
+    SMTP_PORT: string
+    SMTP_USER: string
+    SMTP_PASS: string
+    SMTP_FROM: string
+    SMTP_TO: string
+    SMTP_SECURE: string
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -70,6 +78,14 @@ const loadEnvVariables = (): EnvConfig => {
         "SSL_SUCCESS_BACKEND_URL",
         "SSL_FAIL_BACKEND_URL",
         "SSL_CANCEL_BACKEND_URL",
+
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "SMTP_FROM",
+        "SMTP_TO",
+        "SMTP_SECURE",
     ]
     requiredEnvVariables.forEach(key => {
         if (!process.env[key]) {
@@ -108,6 +124,14 @@ const loadEnvVariables = (): EnvConfig => {
         SSL_SUCCESS_BACKEND_URL: process.env.SSL_SUCCESS_BACKEND_URL as string,
         SSL_FAIL_BACKEND_URL: process.env.SSL_FAIL_BACKEND_URL as string,
         SSL_CANCEL_BACKEND_URL: process.env.SSL_CANCEL_BACKEND_URL as string,
+
+        SMTP_HOST: process.env.SMTP_HOST as string,
+        SMTP_PORT: process.env.SMTP_PORT as string,
+        SMTP_USER: process.env.SMTP_USER as string,
+        SMTP_PASS: process.env.SMTP_PASS as string,
+        SMTP_FROM: process.env.SMTP_FROM as string,
+        SMTP_TO: process.env.SMTP_TO as string,
+        SMTP_SECURE: process.env.SMTP_SECURE as string,
     }
 }
 
