@@ -8,8 +8,8 @@ export const createEventZodSchema = z.object({
     .max(50, { message: "Event name cannot exceed 50 characters." }), 
   eventType: z
     .string({ error: "Event type is required" }), 
-  hostId: z
-    .string({ error: "HostId is required" }), 
+  // hostId: z
+  //   .string({ error: "HostId is required" }), 
   date: z
     .string({ error: "Date is required" })
     .refine((val) => !isNaN(Date.parse(val)), {

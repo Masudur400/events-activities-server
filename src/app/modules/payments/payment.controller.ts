@@ -1,9 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import { envVars } from "../../config/env";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
 import { PaymentService } from "./payment.service";
+import httpStatus from 'http-status'
+import { Role } from "../user/user.interface";
+import AppError from "../../errorHandler/AppError";
+
+
+
+
 
 const initPayment = catchAsync(async (req: Request, res: Response) => {
     const bookingId = req.params.bookingId;
@@ -78,11 +86,64 @@ const validatePayment = catchAsync(
     }
 );
 
+
+
+
+const getMyPayments = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new Error("Unauthorized: User not found");
+  }
+
+  const result = await PaymentService.getMyPayments(userId, req.query as any);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User payments retrieved successfully",
+    data: result 
+  });
+});
+
+
+
+const getAllPayments = catchAsync(async (req: Request, res: Response) => {
+  if (req.user?.role !== Role.SUPER_ADMIN) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Only SUPER_ADMIN can view all payments");
+  }
+
+  const filters = {
+    status: req.query.status as string | undefined,
+  };
+
+  const pagination = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+  };
+
+  const result = await PaymentService.getAllPayments(filters, pagination);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Payments retrieved successfully",
+    data: result,
+  });
+});
+ 
+
+
+
+
+
 export const PaymentController = {
     initPayment,
     successPayment,
     failPayment,
     cancelPayment,
     getInvoiceDownloadUrl,
-    validatePayment
+    validatePayment,
+    getMyPayments,
+    getAllPayments
 };

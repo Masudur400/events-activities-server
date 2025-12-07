@@ -11,7 +11,7 @@ import { Role } from "../user/user.interface";
 const router = Router()
 
 router.post('/create-event',
-    checkAuth(Role.SUPER_ADMIN),
+    checkAuth(Role.HOST),
     multerUpload.single('file'),
     validateRequest(createEventZodSchema),//(optional --> just for form data validation)
     eventControllers.createEvent)
@@ -20,10 +20,20 @@ router.get("/all-events",
     checkAuth(...Object.values(Role)),
     eventControllers.getAllEvents);
 
+router.get("/my-events",
+    checkAuth(Role.HOST),
+    eventControllers.getMyEvents);
+
 router.patch("/:id",
     checkAuth(Role.SUPER_ADMIN),
     multerUpload.single('file'),
     eventControllers.updateEvent);
+
+router.put("my-event/:id",
+    checkAuth(Role.HOST),
+    multerUpload.single('file'),
+    eventControllers.updateMyEvent
+);
 
 router.get("/:id",
     checkAuth(...Object.values(Role)),
@@ -32,6 +42,10 @@ router.get("/:id",
 router.delete("/:id",
     checkAuth(Role.SUPER_ADMIN),
     eventControllers.deleteEvent);
+
+router.delete("/my-event/:id",
+    checkAuth(Role.HOST),
+    eventControllers.deleteMyEvent);
 
 
 

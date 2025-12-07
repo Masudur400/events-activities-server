@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 export enum EventStatus {
   OPEN = "OPEN",
   FULL = "FULL",
-  CANCELLED = "CANCELLED",
+  CANCELED = "CANCELED",
   COMPLETED = "COMPLETED",
 }
 

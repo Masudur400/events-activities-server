@@ -1,1 +1,1 @@
-export const eventSearchableFields = ["eventName", "description"];
+export const eventSearchableFields = ["eventName", "description", 'eventType'];
