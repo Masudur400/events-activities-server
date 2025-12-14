@@ -71,19 +71,24 @@ const getSingleUser = catchAsync(async (req: Request, res: Response) => {
 
 
 
+
 const getMe = catchAsync(async (req: Request, res: Response) => {
-    const decodedToken = req.user as JwtPayload;
-    const result = await UserServices.getMe(decodedToken.id);
-    if (!result.data) {
-        throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
-    }
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "Your profile Retrieved Successfully",
-        data: result.data
-    });
+  const decodedToken = req.user as JwtPayload;
+
+  const result = await UserServices.getMe(decodedToken.id);
+
+  if (!result.data) {
+    throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
+  }
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Your profile Retrieved Successfully",
+    data: result.data,
+  });
 });
+
 
 
 
