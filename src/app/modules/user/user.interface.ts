@@ -36,6 +36,6 @@ export interface IUser {
     auths: IAuthProvider[]
     // bookings?: Types.ObjectId[] 
     // payments?: Types.ObjectId[] 
-    createAt?: Date
+    createdAt?: Date
     updatedAt?:Date 
 }

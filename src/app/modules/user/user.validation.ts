@@ -62,7 +62,7 @@ export const updateUserZodSchema = z.object({
     bio: z
         .string({ error: "Bio must be string" })
         .min(10, { message: "Bio must be at least 10 characters long." })
-        .max(100, { message: "Bio cannot exceed 200 characters." })
+        .max(100, { message: "Bio cannot exceed 100 characters." })
         .optional(),
 
     address: z
