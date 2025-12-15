@@ -66,7 +66,27 @@ const changePassword = async (oldPassword: string, newPassword: string, decodedT
 };
 
 
+
+const forgetPassword = async (email: string, newPassword: string) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found with this email");
+  }
+
+  user.password = await bcryptjs.hash(
+    newPassword,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+  await user.save();
+
+  return true;
+};
+
+
+
+
 export const authServices = {
     loginUser,
     changePassword,
+    forgetPassword
 };
