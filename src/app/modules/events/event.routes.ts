@@ -16,6 +16,9 @@ router.post('/create-event',
     validateRequest(createEventZodSchema),//(optional --> just for form data validation)
     eventControllers.createEvent)
 
+router.get("/types",
+    eventControllers.getEventTypes);
+
 router.get("/all-events",
     checkAuth(...Object.values(Role)),
     eventControllers.getAllEvents);
@@ -29,7 +32,7 @@ router.patch("/:id",
     multerUpload.single('file'),
     eventControllers.updateEvent);
 
-router.put("my-event/:id",
+router.patch("/my-event/:id",
     checkAuth(Role.HOST),
     multerUpload.single('file'),
     eventControllers.updateMyEvent

@@ -33,6 +33,18 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const getEventTypes = catchAsync(async (req: Request, res: Response) => {
+  const eventTypes = await EventServices.getAllEventTypes();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Event types fetched successfully",
+    data: eventTypes,
+  });
+});
+
+
 
 
 const getMyEvents = catchAsync(async (req: Request, res: Response) => {
@@ -173,6 +185,7 @@ const updateMyEvent = catchAsync(async (req: Request, res: Response) => {
 
 export const eventControllers = {
     createEvent,
+    getEventTypes,
     getMyEvents,
     getAllEvents,
     getSingleEvent,

@@ -64,6 +64,17 @@ const createEvent = async (payload: Partial<IEvent>): Promise<IEvent> => {
 
 
 
+const getAllEventTypes = async (): Promise<string[]> => { 
+  const types = await Event.distinct("eventType");
+
+  if (!types || types.length === 0) {
+    throw new AppError(httpStatus.NOT_FOUND, "No event types found!");
+  }
+
+  return types;
+};
+
+
 
 
 
@@ -294,6 +305,7 @@ const updateMyEvent = async (eventId: string, payload: Partial<IEvent>, hostId: 
 
 export const EventServices = {
   createEvent,
+  getAllEventTypes,
   getMyEvents,
   getAllEvents,
   getSingleEvent,
