@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppError from "../../errorHandler/AppError"
 import { IAuthProvider, IUser, Role } from "./user.interface"
 import { User } from "./user.model"
@@ -92,6 +93,52 @@ const getAllUsers = async (query: Record<string, string>) => {
 };
 
 
+
+
+const getAllHosts = async (query: Record<string, any>) => {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const searchTerm = query.searchTerm || "";
+
+    // 🔍 search condition (name OR email)
+    const searchCondition = searchTerm
+        ? {
+              $or: [
+                  { name: { $regex: searchTerm, $options: "i" } },
+                  { email: { $regex: searchTerm, $options: "i" } },
+              ],
+          }
+        : {};
+
+    const filterCondition = {
+        role: Role.HOST,
+        ...searchCondition,
+    };
+
+    const data = await User.find(filterCondition)
+        .select("-password")
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments(filterCondition);
+
+    return {
+        data,
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total / limit),
+        },
+    };
+};
+
+
+
+
+
 const getSingleUser = async (id: string) => {
     const user = await User.findById(id).select('-password')
     return {
@@ -150,6 +197,7 @@ export const UserServices = {
     createUser,
     createHost,
     getAllUsers,
+    getAllHosts,
     getSingleUser,
     getMe,
     updateMyProfile,

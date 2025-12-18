@@ -20,7 +20,7 @@ router.get("/types",
     eventControllers.getEventTypes);
 
 router.get("/all-events",
-    checkAuth(...Object.values(Role)),
+    // checkAuth(...Object.values(Role)),
     eventControllers.getAllEvents);
 
 router.get("/my-events",
@@ -33,13 +33,13 @@ router.patch("/:id",
     eventControllers.updateEvent);
 
 router.patch("/my-event/:id",
-    checkAuth(Role.HOST),
+    checkAuth(Role.HOST, Role.SUPER_ADMIN),
     multerUpload.single('file'),
     eventControllers.updateMyEvent
 );
 
 router.get("/:id",
-    checkAuth(...Object.values(Role)),
+    // checkAuth(...Object.values(Role)),
     eventControllers.getSingleEvent);
 
 router.delete("/:id",

@@ -24,6 +24,11 @@ router.get('/all-users',
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     userControllers.getAllUser)
 
+router.get(
+    "/all-hosts",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    userControllers.getAllHosts);
+
 router.get("/me",
     checkAuth(...Object.values(Role)),
     userControllers.getMe)
@@ -31,11 +36,10 @@ router.get("/me",
 router.patch(
     "/update-profile",
     checkAuth(...Object.values(Role)),
-    multerUpload.single('file'),          
+    multerUpload.single('file'),
     validateRequest(updateUserZodSchema),  //(optional --> just for form data validation)
-    userControllers.updateMyProfile       
-);
-
+    userControllers.updateMyProfile
+); 
 
 
 router.patch("/:id",

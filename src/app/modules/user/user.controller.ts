@@ -55,6 +55,22 @@ const getAllUser = catchAsync(async (req, res) => {
 });
 
 
+
+const getAllHosts = catchAsync(async (req: Request, res: Response) => {
+    const result = await UserServices.getAllHosts(req.query);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All hosts retrieved successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+});
+
+
+
+
 const getSingleUser = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id;
     const result = await UserServices.getSingleUser(id);
@@ -146,6 +162,7 @@ export const userControllers = {
     createUser,
     createHost,
     getAllUser,
+    getAllHosts,
     getSingleUser,
     getMe,
     updateMyProfile,
