@@ -11,16 +11,13 @@ const getAdminState = async () => {
   const totalHosts = await User.countDocuments({ role: Role.HOST });
   const totalSuperAdmin = await User.countDocuments({ role: Role.SUPER_ADMIN });
   const totalAdmin = await User.countDocuments({ role: Role.ADMIN });
-  const totalUserCount = await User.countDocuments(); // all users
-  const totalPaymentCount = await Payment.countDocuments({ status: "PAID" });
-
+  const totalUserCount = await User.countDocuments();  
+  const totalPaymentCount = await Payment.countDocuments({ status: "PAID" }); 
   const totalPaidAmountAggregate = await Payment.aggregate([
     { $match: { status: "PAID" } },
     { $group: { _id: null, totalAmount: { $sum: "$amount" } } },
-  ]);
-
-  const totalPaidAmount = totalPaidAmountAggregate[0]?.totalAmount || 0;
-
+  ]); 
+  const totalPaidAmount = totalPaidAmountAggregate[0]?.totalAmount || 0; 
   return {
     totalEvents,
     totalUsers,
@@ -65,28 +62,21 @@ const getHostState = async (hostId: string) => {
 
 
 
-const getUserState = async (userId: string) => {
-  // user bookings
-  const totalBooking = await Booking.countDocuments({ user: userId });
-
-  // user PAID payments
+const getUserState = async (userId: string) => { 
+  const totalBooking = await Booking.countDocuments({ user: userId });  
   const paidPayments = await Payment.find({
     status: "PAID",
   }).populate({
     path: "booking",
     match: { user: userId },
     select: "_id",
-  });
-
-  const userPaidPayments = paidPayments.filter((p) => p.booking !== null);
-
-  const totalPaymentCount = userPaidPayments.length;
-
+  }); 
+  const userPaidPayments = paidPayments.filter((p) => p.booking !== null); 
+  const totalPaymentCount = userPaidPayments.length; 
   const totalPaymentAmount = userPaidPayments.reduce(
     (sum, p) => sum + p.amount,
     0
-  );
-
+  ); 
   return {
     totalBooking,
     totalPaymentCount,

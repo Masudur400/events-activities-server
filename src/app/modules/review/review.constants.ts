@@ -1,1 +1,1 @@
-export const reviewSearchableFields = ["name"]
+export const reviewSearchableFields = ["name", "email"]

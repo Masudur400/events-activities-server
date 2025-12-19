@@ -1,12 +1,12 @@
 import { Router } from "express"; 
 import { UserRoutes } from "../modules/user/user.routes";
-import { AuthRoutes } from "../modules/auth/auth.routes";
-import { EventTypeRoutes } from "../modules/eventTypes/eventType.routes";
+import { AuthRoutes } from "../modules/auth/auth.routes"; 
 import { EventRoutes } from "../modules/events/event.routes";
 import { ReviewRoutes } from "../modules/review/review.route";
 import { BookingRoutes } from "../modules/bookings/booking.route";
 import { PaymentRoutes } from "../modules/payments/payment.route";
 import { StateRoutes } from "../modules/states/state.route";
+import { ContactRoutes } from "../modules/contact/contact.route";
 
 export const router = Router()
 
@@ -19,10 +19,7 @@ const moduleRoutes = [
         path: '/auth',
         route: AuthRoutes
     },
-    {
-        path: '/event-type',
-        route: EventTypeRoutes
-    },
+    
     {
         path: '/event',
         route: EventRoutes
@@ -42,6 +39,10 @@ const moduleRoutes = [
     {
         path: '/state',
         route: StateRoutes
+    },
+    {
+        path: '/contact',
+        route: ContactRoutes
     },
 ]
 

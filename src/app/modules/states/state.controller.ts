@@ -6,8 +6,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
 const getAdminState = catchAsync(async (req: Request, res: Response) => {
-  const result = await StateService.getAdminState();
-
+  const result = await StateService.getAdminState(); 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -17,10 +16,8 @@ const getAdminState = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getHostState = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-
-  const result = await StateService.getHostState(userId);
-
+  const userId = req.user?.id; 
+  const result = await StateService.getHostState(userId); 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -29,11 +26,10 @@ const getHostState = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
 const getUserState = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-
-  const result = await StateService.getUserState(userId);
-
+  const userId = req.user?.id; 
+  const result = await StateService.getUserState(userId); 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

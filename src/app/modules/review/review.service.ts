@@ -81,11 +81,39 @@ const getReviewsByEvent = async (eventId: string, query: Record<string, string> 
 }; 
 
 
+const deleteReview = async (reviewId: string): Promise<IReview | null> => {
+  const review = await Review.findById(reviewId);
+  if (!review) {
+    throw new AppError(httpStatus.NOT_FOUND, "Review not found");
+  }
+
+  const eventId = review.eventId;
+
+  // রিভিউ ডিলিট করা
+  const deletedReview = await Review.findByIdAndDelete(reviewId);
+
+  // ইভেন্টের রেটিং আপডেট করা
+  const remainingReviews = await Review.find({ eventId });
+  const totalReviews = remainingReviews.length;
+  
+  const avgRating = totalReviews > 0 
+    ? remainingReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews 
+    : 0;
+
+  await Event.findByIdAndUpdate(eventId, {
+    totalReviews,
+    avgRating: Number(avgRating.toFixed(1)),
+  });
+
+  return deletedReview;
+};
+
 
 
 
 export const ReviewServices = {
     createReview,
     getReviewsByEvent,
-    getAllReviews
+    getAllReviews,
+    deleteReview
 };

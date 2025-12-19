@@ -46,13 +46,10 @@ const getAllBookings = catchAsync(async (req: Request, res: Response) => {
 
 const getUserBookings = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id; 
-  if (!userId) throw new AppError(httpStatus.UNAUTHORIZED, "User not found");
-
+  if (!userId) throw new AppError(httpStatus.UNAUTHORIZED, "User not found"); 
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-
-  const result = await bookingServices.getUserBookings(userId, page, limit);
-
+  const limit = Number(req.query.limit) || 10; 
+  const result = await bookingServices.getUserBookings(userId, page, limit); 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

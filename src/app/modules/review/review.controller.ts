@@ -52,11 +52,24 @@ const getReviewsByEvent = catchAsync(
 
 
 
+const deleteReview = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await ReviewServices.deleteReview(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Review deleted successfully",
+    data: result,
+  });
+});
+
 
 
 
 export const ReviewControllers = {
   createReview,
   getReviewsByEvent,
-  getAllReviews
+  getAllReviews,
+  deleteReview
 };

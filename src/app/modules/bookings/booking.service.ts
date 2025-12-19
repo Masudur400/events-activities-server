@@ -222,7 +222,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 
 
 const getAllBookings = async (userRole: string, page = 1, limit = 10) => {
-  if (![Role.ADMIN, Role.SUPER_ADMIN].includes(userRole as Role)) {
+  if (![Role.ADMIN, Role.SUPER_ADMIN, Role.HOST].includes(userRole as Role)) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized to access this resource");
   }
 
@@ -251,24 +251,20 @@ const getAllBookings = async (userRole: string, page = 1, limit = 10) => {
 
 
 const getUserBookings = async (userId: string, page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
-
-  const total = await Booking.countDocuments({ user: new Types.ObjectId(userId) });
-
+  const skip = (page - 1) * limit; 
+  const total = await Booking.countDocuments({ user: new Types.ObjectId(userId) }); 
   const bookings = await Booking.find({ user: new Types.ObjectId(userId) })
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
     .populate("event", "eventName eventType joiningFee")
-    .populate("payment");
-
+    .populate("payment"); 
   const meta = {
     total,
     page,
     limit,
     totalPages: Math.ceil(total / limit),
-  };
-
+  }; 
   return { meta, bookings };
 };
 
