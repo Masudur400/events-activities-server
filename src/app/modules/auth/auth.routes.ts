@@ -9,8 +9,13 @@ import { preventLoggedInUser } from "../../utils/preventLoggedInUser";
 const router = Router()
 
 router.post('/login', authControllers.loginUser)
+
 router.post('/logout', authControllers.logout)
-router.post("/change-password", checkAuth(...Object.values(Role)), authControllers.changePassword)
+
+router.post("/change-password",
+  checkAuth(...Object.values(Role)),
+  authControllers.changePassword)
+  
 router.post(
   "/forget-password",
   preventLoggedInUser, // condition without logedin user can send request

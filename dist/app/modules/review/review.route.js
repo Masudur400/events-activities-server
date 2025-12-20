@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReviewRoutes = void 0;
+const express_1 = require("express");
+const review_controller_1 = require("./review.controller");
+const checkAuth_1 = require("../../middlewares/checkAuth");
+const user_interface_1 = require("../user/user.interface");
+const validateRequest_1 = require("../../middlewares/validateRequest");
+const review_validation_1 = require("./review.validation");
+const router = (0, express_1.Router)();
+router.post("/create-review", (0, checkAuth_1.checkAuth)(...Object.values(user_interface_1.Role)), (0, validateRequest_1.validateRequest)(review_validation_1.createReviewZodSchema), review_controller_1.ReviewControllers.createReview);
+router.get("/all-reviews", review_controller_1.ReviewControllers.getAllReviews);
+router.get("/:eventId", review_controller_1.ReviewControllers.getReviewsByEvent);
+router.delete("/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN), review_controller_1.ReviewControllers.deleteReview);
+exports.ReviewRoutes = router;

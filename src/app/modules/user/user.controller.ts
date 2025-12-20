@@ -28,10 +28,8 @@ const createHost = catchAsync(async (req: Request, res: Response) => {
     const payload = {
         ...req.body, // validated data from validateRequest
         picture: req.file?.path, // photo path
-    };
-
-    const result = await UserServices.createHost(payload);
-
+    }; 
+    const result = await UserServices.createHost(payload); 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
@@ -57,8 +55,7 @@ const getAllUser = catchAsync(async (req, res) => {
 
 
 const getAllHosts = catchAsync(async (req: Request, res: Response) => {
-    const result = await UserServices.getAllHosts(req.query);
-
+    const result = await UserServices.getAllHosts(req.query); 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -89,14 +86,11 @@ const getSingleUser = catchAsync(async (req: Request, res: Response) => {
 
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-  const decodedToken = req.user as JwtPayload;
-
-  const result = await UserServices.getMe(decodedToken.id);
-
+  const decodedToken = req.user as JwtPayload; 
+  const result = await UserServices.getMe(decodedToken.id); 
   if (!result.data) {
     throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
-  }
-
+  } 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -158,6 +152,22 @@ const updateUserByAdmin = catchAsync(async (req: Request, res: Response) => {
 
 
 
+const deleteHost = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    await UserServices.deleteHost(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Host deleted successfully",
+        data: null,
+    });
+}); 
+
+
+
+
 export const userControllers = {
     createUser,
     createHost,
@@ -166,5 +176,6 @@ export const userControllers = {
     getSingleUser,
     getMe,
     updateMyProfile,
-    updateUserByAdmin
+    updateUserByAdmin,
+    deleteHost
 }

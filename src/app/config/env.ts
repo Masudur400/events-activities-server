@@ -7,6 +7,7 @@ interface EnvConfig {
     DB_URL: string
     NODE_ENV: 'development' | 'production'
     FRONTEND_URL: string
+    FRONTEND_URL2: string
 
     BCRYPT_SALT_ROUND: string
     EXPRESS_SESSION_SECRET: string
@@ -51,6 +52,7 @@ const loadEnvVariables = (): EnvConfig => {
         "DB_URL",
         "NODE_ENV",
         "FRONTEND_URL",
+        "FRONTEND_URL2",
 
         "BCRYPT_SALT_ROUND",
         "EXPRESS_SESSION_SECRET",
@@ -96,7 +98,8 @@ const loadEnvVariables = (): EnvConfig => {
         PORT: process.env.PORT as string,
         DB_URL: process.env.DB_URL as string,
         NODE_ENV: process.env.NODE_ENV as 'development' | 'production',
-        FRONTEND_URL: process.env.FRONTEND_URL as string,
+        FRONTEND_URL: process.env.FRONTEND_URL as string, 
+        FRONTEND_URL2: process.env.FRONTEND_URL2 as string, 
 
         BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
         EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,

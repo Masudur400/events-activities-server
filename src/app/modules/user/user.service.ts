@@ -39,37 +39,30 @@ const createUser = async (payload: Partial<IUser>) => {
 
 
 const createHost = async (payload: Partial<IUser>): Promise<IUser> => {
-    const { email, password, ...rest } = payload;
-
+    const { email, password, ...rest } = payload; 
     if (!email) {
         throw new AppError(httpStatus.BAD_REQUEST, "Email is required!");
-    }
-
+    } 
     if (!password) {
         throw new AppError(httpStatus.BAD_REQUEST, "Password is required!");
-    }
-
+    }  
     const isUserExist = await User.findOne({ email });
     if (isUserExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User already exists!");
-    }
-
-    const hashedPassword = await bcryptjs.hash(password, Number(envVars.BCRYPT_SALT_ROUND));
-
+    } 
+    const hashedPassword = await bcryptjs.hash(password, Number(envVars.BCRYPT_SALT_ROUND)); 
     // provider must be literal type "credentials"
     const authProvider: IAuthProvider = {
         provider: "credentials",
         providerId: email,
-    };
-
+    }; 
     const user = await User.create({
         email,
         password: hashedPassword,
         auths: [authProvider],
         role: Role.HOST,
         ...rest, // rest should only include IUser fields
-    });
-
+    }); 
     return user;
 };
 
@@ -82,13 +75,11 @@ const getAllUsers = async (query: Record<string, string>) => {
         .search(userSearchableFields)
         .sort()
         .fields()
-        .pagination();
-
+        .pagination(); 
     const [data, meta] = await Promise.all([
         queryBuilder.build(),
         queryBuilder.getMeta()
-    ]);
-
+    ]); 
     return { data, meta };
 };
 
@@ -99,8 +90,7 @@ const getAllHosts = async (query: Record<string, any>) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
     const skip = (page - 1) * limit;
-    const searchTerm = query.searchTerm || "";
-
+    const searchTerm = query.searchTerm || ""; 
     // 🔍 search condition (name OR email)
     const searchCondition = searchTerm
         ? {
@@ -109,21 +99,17 @@ const getAllHosts = async (query: Record<string, any>) => {
                   { email: { $regex: searchTerm, $options: "i" } },
               ],
           }
-        : {};
-
+        : {}; 
     const filterCondition = {
         role: Role.HOST,
         ...searchCondition,
-    };
-
+    }; 
     const data = await User.find(filterCondition)
         .select("-password")
         .skip(skip)
         .limit(limit)
-        .sort({ createdAt: -1 });
-
-    const total = await User.countDocuments(filterCondition);
-
+        .sort({ createdAt: -1 }); 
+    const total = await User.countDocuments(filterCondition); 
     return {
         data,
         meta: {
@@ -193,6 +179,33 @@ const updateUserByAdmin = async (userId: string, payload: Partial<IUser>) => {
 
 
 
+const deleteHost = async (userId: string) => {
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "Host not found");
+    }
+
+    // Optional: Ensure we are only deleting users with the HOST role
+    if (user.role !== Role.HOST) {
+        throw new AppError(httpStatus.BAD_REQUEST, "This user is not a host");
+    }
+
+    // 1. Delete image from Cloudinary if it exists
+    if (user.picture) {
+        await deleteImageFromCLoudinary(user.picture);
+    }
+
+    // 2. Delete the user record from DB
+    await User.findByIdAndDelete(userId);
+
+    return null;
+};
+ 
+ 
+
+
+
 export const UserServices = {
     createUser,
     createHost,
@@ -201,5 +214,6 @@ export const UserServices = {
     getSingleUser,
     getMe,
     updateMyProfile,
-    updateUserByAdmin
+    updateUserByAdmin,
+    deleteHost
 }

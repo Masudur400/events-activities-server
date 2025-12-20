@@ -49,8 +49,7 @@ const changePassword = catchAsync(
   async (req: Request, res: Response) => {
     const { oldPassword, newPassword } = req.body;
     const decodedToken = req.user as JwtPayload; // checkAuth middleware থেকে 
-    await authServices.changePassword(oldPassword, newPassword, decodedToken);
-
+    await authServices.changePassword(oldPassword, newPassword, decodedToken); 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,

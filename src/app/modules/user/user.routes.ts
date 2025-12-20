@@ -39,7 +39,7 @@ router.patch(
     multerUpload.single('file'),
     validateRequest(updateUserZodSchema),  //(optional --> just for form data validation)
     userControllers.updateMyProfile
-); 
+);
 
 
 router.patch("/:id",
@@ -50,6 +50,13 @@ router.patch("/:id",
 router.get("/:id",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     userControllers.getSingleUser)
+
+
+router.delete(
+    "/delete-host/:id",
+    checkAuth(Role.SUPER_ADMIN),  
+    userControllers.deleteHost
+);
 
 
 

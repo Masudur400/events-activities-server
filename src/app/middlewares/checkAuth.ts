@@ -49,42 +49,46 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
     try {
         let token: string | undefined;
 
-        // Authorization header priority
+        // 1. Authorization header priority
         if (req.headers.authorization?.startsWith("Bearer ")) {
             token = req.headers.authorization.split(" ")[1];
         }
-        // Cookie fallback
+        // 2. Cookie fallback
         else if (req.cookies?.accessToken) {
             token = req.cookies.accessToken;
         }
+
         if (!token) {
             throw new AppError(httpStatus.UNAUTHORIZED, "No token provided");
         }
-        //  Verify token
+
+        // 3. Verify token
+        // Note: verifyToken usually throws a generic Error if invalid, which goes to catch block
         const verifiedToken = verifyToken(token, envVars.ACCESS_SECRET) as JwtPayload;
 
-        // Check user exists
+        // 4. Check user exists
         const isUserExist = await User.findById(verifiedToken.id);
         if (!isUserExist)
             throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
 
         if (!isUserExist.isVerified)
-            throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+            throw new AppError(httpStatus.FORBIDDEN, "User is not verified");
 
+        // 5. Check status
         if (
             isUserExist.isActive === IsActive.BLOCKED ||
             isUserExist.isActive === IsActive.INACTIVE
         ) {
             throw new AppError(
-                httpStatus.BAD_REQUEST,
+                httpStatus.FORBIDDEN, // 403 is better than 400 for blocked users
                 `User is ${isUserExist.isActive}`
             );
         }
 
         if (isUserExist.isDeleted)
-            throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
+            throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
 
-        //   Role check (only if roles provided)
+        // 6. Role check
         if (authRoles.length && !authRoles.includes(verifiedToken.role)) {
             throw new AppError(
                 httpStatus.FORBIDDEN,
@@ -92,11 +96,22 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
             );
         }
 
-        //  Attach user
+        // 7. Attach user
         req.user = verifiedToken;
         next();
+
     } catch (error) {
-        console.log("JWT ERROR:", error);
+        console.log("Auth Middleware Error:", error);
+
+        // --- CRITICAL FIX START ---
+        // If the error is one we intentionally threw above (like "User is blocked"),
+        // pass it straight to the global error handler.
+        if (error instanceof AppError) {
+            return next(error);
+        }
+        // --- CRITICAL FIX END ---
+
+        // If it's an unknown error (like JWT signature mismatch), return 401
         next(new AppError(httpStatus.UNAUTHORIZED, "Invalid or expired token"));
     }
 };
