@@ -179,6 +179,7 @@ const getAllBookings = (userRole_1, ...args_1) => __awaiter(void 0, [userRole_1,
     const skip = (page - 1) * limit;
     const total = yield booking_model_1.Booking.countDocuments();
     const bookings = yield booking_model_1.Booking.find()
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate("user", "name email")
@@ -194,8 +195,13 @@ const getAllBookings = (userRole_1, ...args_1) => __awaiter(void 0, [userRole_1,
 });
 const getUserBookings = (userId_1, ...args_1) => __awaiter(void 0, [userId_1, ...args_1], void 0, function* (userId, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-    const total = yield booking_model_1.Booking.countDocuments({ user: new mongoose_1.Types.ObjectId(userId) });
-    const bookings = yield booking_model_1.Booking.find({ user: new mongoose_1.Types.ObjectId(userId) })
+    const total = yield booking_model_1.Booking.countDocuments({
+        user: new mongoose_1.Types.ObjectId(userId),
+    });
+    const bookings = yield booking_model_1.Booking.find({
+        user: new mongoose_1.Types.ObjectId(userId),
+    })
+        .sort({ createdAt: -1 }) // ✅ নতুনগুলো আগে
         .skip(skip)
         .limit(limit)
         .populate("user", "name email")

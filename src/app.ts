@@ -16,7 +16,7 @@ app.use(
       envVars.FRONTEND_URL,
       envVars.FRONTEND_URL2,
       "http://localhost:3000",
-      "https://events-activities-client-sigma.vercel.app",
+      "https://events-activities.vercel.app",
     ],
     credentials: true,
   })

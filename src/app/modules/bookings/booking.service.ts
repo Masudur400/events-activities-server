@@ -231,6 +231,7 @@ const getAllBookings = async (userRole: string, page = 1, limit = 10) => {
   const total = await Booking.countDocuments();
 
   const bookings = await Booking.find()
+  .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
@@ -250,23 +251,37 @@ const getAllBookings = async (userRole: string, page = 1, limit = 10) => {
 
 
 
-const getUserBookings = async (userId: string, page = 1, limit = 10) => {
-  const skip = (page - 1) * limit; 
-  const total = await Booking.countDocuments({ user: new Types.ObjectId(userId) }); 
-  const bookings = await Booking.find({ user: new Types.ObjectId(userId) })
+const getUserBookings = async (
+  userId: string,
+  page = 1,
+  limit = 10
+) => {
+  const skip = (page - 1) * limit;
+
+  const total = await Booking.countDocuments({
+    user: new Types.ObjectId(userId),
+  });
+
+  const bookings = await Booking.find({
+    user: new Types.ObjectId(userId),
+  })
+    .sort({ createdAt: -1 }) // ✅ নতুনগুলো আগে
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
     .populate("event", "eventName eventType joiningFee")
-    .populate("payment"); 
+    .populate("payment");
+
   const meta = {
     total,
     page,
     limit,
     totalPages: Math.ceil(total / limit),
-  }; 
+  };
+
   return { meta, bookings };
 };
+
 
 
 
