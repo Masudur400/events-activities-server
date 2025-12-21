@@ -48,41 +48,87 @@ This is the robust RESTful API that powers the Event & Entertainment platform. B
 
 ---
 
-### 📡 API Endpoints (Quick Overview)
+## 📡 API Endpoints Documentation
+
+All routes are prefixed with `/api`.
+
+### 🔐 Auth Module (`/api/auth`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/login` | Public | Login and get JWT |
+| POST | `/logout` | Auth | Clear session/token |
+| POST | `/change-password` | Auth | Change password (logged in) |
+| POST | `/forget-password` | Public | Send reset link via email |
+
+### 👤 User Module (`/api/user`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/register` | Public | Standard user registration |
+| POST | `/create-host` | Super Admin | Admin can create Host accounts |
+| GET | `/all-users` | Admin/Super | Get all registered users |
+| GET | `/all-hosts` | Admin/Super | Get all host profiles |
+| GET | `/me` | Auth | Get current logged-in user profile |
+| PATCH| `/update-profile` | Auth | Update profile with image upload |
+| PATCH| `/:id` | Super Admin | Update user status/details by Admin |
+| GET | `/:id` | Admin/Super | Get specific user by ID |
+| DELETE| `/delete-host/:id` | Super Admin | Permanently remove a host |
+
+### 📅 Event Module (`/api/event`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/create-event` | Host | Create new event (with image) |
+| GET | `/types` | Public | Get available event categories |
+| GET | `/all-events` | Public | List all active events |
+| GET | `/my-events` | Host | Get events created by logged-in host |
+| GET | `/:id` | Public | Detailed event view |
+| PATCH| `/my-event/:id` | Host/Super | Edit specific event details |
+| DELETE| `/my-event/:id` | Host | Host can delete their own event |
+| DELETE| `/:id` | Super Admin | Admin can delete any event |
+
+### 🎟️ Booking Module (`/api/booking`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/` | User/Auth | Create a new event booking |
+| GET | `/` | Admin/Host | View all bookings in system |
+| GET | `/my-bookings` | Auth | View user's personal booking list |
+
+### 💳 Payment Module (`/api/payment`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/init-payment/:id` | User | Initialize SSLCommerz gateway |
+| POST | `/success` | Public | Payment success callback |
+| POST | `/fail` | Public | Payment failure callback |
+| POST | `/cancel` | Public | Payment cancel callback |
+| GET | `/invoice/:id` | Auth | Download payment invoice URL |
+| GET | `/my-payments` | Auth | View personal payment history |
+| GET | `/all-payments` | Super Admin | View all system transactions |
+
+### ⭐ Review Module (`/api/review`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/create-review` | Auth | Post rating and feedback |
+| GET | `/all-reviews` | Public | View all site reviews |
+| GET | `/:eventId` | Public | View reviews for a specific event |
+| DELETE| `/:id` | Admin/Super | Delete inappropriate reviews |
+
+### 📊 Stats Module (`/api/state`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| GET | `/super-admin` | Super Admin | System-wide analytics |
+| GET | `/host` | Host | Stats for specific host's events |
+| GET | `/user` | Auth | Personal activity stats |
+
+### 📧 Contact Module (`/api/contact`)
+| Method | Endpoint | Role | Description |
+| :--- | :--- | :--- | :--- |
+| POST | `/send` | Public | Send contact email from website |
+
 ---
-# 🔐 Authentication
-/Endpoint,                    Method,        Role,         Description
-/api/user/register,           POST,          Public,       New account registration (User)
-/api/user/create-host         POST           Private       Create Host By Admin
-/api/auth/login,              POST,          Public,       Login and receive JWT access token
-/api/auth/forget-password,    POST,          Public,       Send password  
-/api/auth/change-password,    PATCH,         Private,      Change password while logged in
----
-# 👤 User Profile
-Endpoint,                   Method,       Role,       Description
-/api/user/me,               GET,          Private,    Get current logged-in user details
-/api/user/update-profile,   PATCH,        Private,    Update profile info (with Image upload)
----
-# 📅 Events
-Endpoint,                Method,    Role,               Description
-/api/event/create-event, POST       Host                Create a new event (Multer/Cloudinary)
-/api/event/all-events,   GET,       Public,             Get all events (with filtering & search)
-/api/event/:id,          GET,       Public,             Get single event details 
-/api/event/:id,          PATCH,     Host/Admin,         Update event details
-/api/event/:id,          DELETE,    Host/Admin,         Delete an event
-/api/event/my-events,    GET,       Host,               Get events created by the logged-in host
----
-# Bookings & Payments (SSLCommerz)
-Endpoint,                  Method,       Role,      Description
-/api/booking,              POST,         User,      Initialize booking and payment process
-/api/booking/success,      POST,         Public,    SSLCommerz payment success callback
-/api/booking/fail,         POST,         Public,    SSLCommerz payment failure callback
-/api/booking/cancel,       POST,         Public,S   SLCommerz payment cancellation callback
-/api/booking/my-bookings,  GET,          User,      Get booking history for current user
----
-# ⭐ Reviews & Ratings
-Endpoint,                   Method,      Role,       Description
-/api/review/create-review,  POST,        User,       Add a review and rating for an event
-/api/review/all-reviews     GET          admin       Review Can manage
-/api/review/:eventId,       GET,         Public,     Get all reviews for a specific event
---- 
+
+## ⚙️ Setup Instructions
+
+1. **Clone & Install:**
+   ```bash
+   git clone <repo-url>
+   cd <repo-name>
+   npm install
