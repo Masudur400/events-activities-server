@@ -69,6 +69,28 @@ const getAllEvents = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0
         meta: result.meta,
     });
 }));
+const getDeletedEvents = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield event_service_1.EventServices.getDeletedEvents(req.query);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Deleted events retrieved successfully",
+        meta: result.meta,
+        data: result.data,
+    });
+}));
+const getMyDeletedEvents = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const hostId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const result = yield event_service_1.EventServices.getMyDeletedEvents(hostId, req.query);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Your deleted events retrieved successfully",
+        meta: result.meta,
+        data: result.data,
+    });
+}));
 const getSingleEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const eventId = req.params.id;
     const result = yield event_service_1.EventServices.getSingleEvent(eventId);
@@ -92,7 +114,6 @@ const deleteEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0,
 const deleteMyEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const eventId = req.params.id;
-    // ✅ Pass logged-in host ID to service
     const result = yield event_service_1.EventServices.deleteMyEvent(eventId, (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
@@ -101,11 +122,54 @@ const deleteMyEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 
         data: null,
     });
 }));
+const softDeleteEventByAdmin = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield event_service_1.EventServices.softDeleteEventByAdmin(id);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Event deleted successfully",
+        data: result,
+    });
+}));
+const restoreEventByAdmin = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield event_service_1.EventServices.restoreEventByAdmin(id);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Event restored successfully",
+        data: result,
+    });
+}));
+const softDeleteMyEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const eventId = req.params.id;
+    const hostId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const result = yield event_service_1.EventServices.softDeleteMyEvent(eventId, hostId);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Your event has been deleted successfully",
+        data: result,
+    });
+}));
+const restoreMyEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const eventId = req.params.id;
+    const hostId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const result = yield event_service_1.EventServices.restoreMyEvent(eventId, hostId);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Your event has been restored successfully",
+        data: result,
+    });
+}));
 const updateEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const eventId = req.params.id;
     let payload = {};
-    // Form-data: baki field gula JSON string pathabe
     if (req.body.data) {
         try {
             payload = JSON.parse(req.body.data);
@@ -155,8 +219,14 @@ exports.eventControllers = {
     getEventTypes,
     getMyEvents,
     getAllEvents,
+    getDeletedEvents,
+    getMyDeletedEvents,
     getSingleEvent,
     deleteEvent,
+    softDeleteEventByAdmin,
+    restoreEventByAdmin,
+    softDeleteMyEvent,
+    restoreMyEvent,
     deleteMyEvent,
     updateEvent,
     updateMyEvent

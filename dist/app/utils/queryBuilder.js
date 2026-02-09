@@ -23,10 +23,19 @@ class QueryBuilder {
         for (const field of excludeField) {
             delete filter[field];
         }
-        this.filterQuery = filter; // save for meta count later
-        this.modelQuery = this.modelQuery.find(filter);
+        this.filterQuery = Object.assign(Object.assign({}, filter), { isDeleted: false });
+        this.modelQuery = this.modelQuery.find(this.filterQuery);
         return this;
     }
+    // filter(): this {
+    //     const filter = { ...this.query };
+    //     for (const field of excludeField) { 
+    //         delete filter[field];
+    //     }
+    //     this.filterQuery = filter; // save for meta count later
+    //     this.modelQuery = this.modelQuery.find(filter);
+    //     return this;
+    // }
     // ---------------- Search ----------------
     search(searchableFields) {
         var _a;

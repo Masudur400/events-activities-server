@@ -75,6 +75,49 @@ const getAllEventTypes = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     return types;
 });
+// const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
+//   if (!hostId) {
+//     throw new AppError(httpStatus.UNAUTHORIZED, "Host ID is required!");
+//   }
+//   const { searchTerm, sortBy, sortOrder, page = "1", limit = "10", ...filters } = query;
+//   const pageNum = parseInt(page, 10);
+//   const limitNum = parseInt(limit, 10);
+//   const skip = (pageNum - 1) * limitNum;
+//   // Base filter: only host's events
+//   const baseFilter: any = { hostId };
+//   // Search by searchTerm
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, "i"); // case-insensitive
+//     baseFilter.$or = eventSearchableFields.map((field) => ({
+//       [field]: searchRegex,
+//     }));
+//   }
+//   // Additional filters
+//   Object.keys(filters).forEach((key) => {
+//     baseFilter[key] = filters[key];
+//   });
+//   //  Sort
+//   let sortOption: any = { createdAt: -1 }; // default newest first
+//   if (sortBy) {
+//     sortOption = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+//   }
+//   // Fetch events with pagination
+//   const events = await Event.find(baseFilter)
+//     .populate({ path: "hostId", select: "-password -auths" })
+//     .sort(sortOption)
+//     .skip(skip)
+//     .limit(limitNum);
+//   // Total count for meta
+//   const total = await Event.countDocuments(baseFilter);
+//   const totalPages = Math.ceil(total / limitNum);
+//   const meta = {
+//     total,
+//     page: pageNum,
+//     limit: limitNum,
+//     totalPages,
+//   };
+//   return { meta, data: events };
+// };
 const getMyEvents = (hostId, query) => __awaiter(void 0, void 0, void 0, function* () {
     if (!hostId) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "Host ID is required!");
@@ -83,8 +126,7 @@ const getMyEvents = (hostId, query) => __awaiter(void 0, void 0, void 0, functio
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
-    // Base filter: only host's events
-    const baseFilter = { hostId };
+    const baseFilter = { hostId, isDeleted: false };
     // Search by searchTerm
     if (searchTerm) {
         const searchRegex = new RegExp(searchTerm, "i"); // case-insensitive
@@ -96,7 +138,7 @@ const getMyEvents = (hostId, query) => __awaiter(void 0, void 0, void 0, functio
     Object.keys(filters).forEach((key) => {
         baseFilter[key] = filters[key];
     });
-    //  Sort
+    // Sort
     let sortOption = { createdAt: -1 }; // default newest first
     if (sortBy) {
         sortOption = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
@@ -119,7 +161,7 @@ const getMyEvents = (hostId, query) => __awaiter(void 0, void 0, void 0, functio
     return { meta, data: events };
 });
 const getAllEvents = (query) => __awaiter(void 0, void 0, void 0, function* () {
-    const queryBuilder = new queryBuilder_1.QueryBuilder(event_model_1.Event.find().populate({
+    const queryBuilder = new queryBuilder_1.QueryBuilder(event_model_1.Event.find({ isDeleted: false }).populate({
         path: "hostId",
         select: "-password -auths"
     }), query)
@@ -131,6 +173,60 @@ const getAllEvents = (query) => __awaiter(void 0, void 0, void 0, function* () {
         .pagination();
     const [data, meta] = yield Promise.all([queryBuilder.build(), queryBuilder.getMeta()]);
     return { data, meta };
+});
+const getDeletedEvents = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const { searchTerm, page = 1, limit = 10 } = query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+    // Base filter: only deleted events
+    const filter = { isDeleted: true };
+    // Search logic
+    if (searchTerm) {
+        const searchableFields = ["eventName", "description", "eventType"];
+        filter.$or = searchableFields.map((field) => ({
+            [field]: { $regex: searchTerm, $options: "i" },
+        }));
+    }
+    // Query execution
+    const data = yield event_model_1.Event.find(filter)
+        .populate({ path: "hostId", select: "-password -auths" })
+        .sort("-createdAt") // Newest deleted first
+        .skip(skip)
+        .limit(limitNum);
+    // Meta data calculation
+    const total = yield event_model_1.Event.countDocuments(filter);
+    const totalPage = Math.ceil(total / limitNum);
+    return {
+        data,
+        meta: { page: pageNum, limit: limitNum, total, totalPage },
+    };
+});
+const getMyDeletedEvents = (hostId, query) => __awaiter(void 0, void 0, void 0, function* () {
+    const { searchTerm, page = 1, limit = 10 } = query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+    // Base filter: Host specific deleted events
+    const filter = { hostId, isDeleted: true };
+    // Search logic
+    if (searchTerm) {
+        const searchableFields = ["eventName", "description", "eventType"];
+        filter.$or = searchableFields.map((field) => ({
+            [field]: { $regex: searchTerm, $options: "i" },
+        }));
+    }
+    const data = yield event_model_1.Event.find(filter)
+        .populate({ path: "hostId", select: "-password -auths" })
+        .sort("-createdAt")
+        .skip(skip)
+        .limit(limitNum);
+    const total = yield event_model_1.Event.countDocuments(filter);
+    const totalPage = Math.ceil(total / limitNum);
+    return {
+        data,
+        meta: { page: pageNum, limit: limitNum, total, totalPage },
+    };
 });
 const getSingleEvent = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
     const event = yield event_model_1.Event.findById(eventId)
@@ -156,20 +252,71 @@ const deleteEvent = (eventId) => __awaiter(void 0, void 0, void 0, function* () 
     yield event_model_1.Event.findByIdAndDelete(eventId);
     return { message: "Event deleted successfully" };
 });
+const softDeleteEventByAdmin = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
+    const event = yield event_model_1.Event.findById(eventId);
+    if (!event) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
+    }
+    if (event.isDeleted) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Event is already deleted");
+    }
+    event.isDeleted = true;
+    yield event.save();
+    return event;
+});
+const restoreEventByAdmin = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
+    const event = yield event_model_1.Event.findById(eventId);
+    if (!event) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
+    }
+    if (event.isDeleted === false) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Event is already restored");
+    }
+    event.isDeleted = false;
+    yield event.save();
+    return event;
+});
+const softDeleteMyEvent = (eventId, hostId) => __awaiter(void 0, void 0, void 0, function* () {
+    const event = yield event_model_1.Event.findById(eventId);
+    if (!event) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
+    }
+    if (event.hostId.toString() !== hostId) {
+        throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You can only delete your own events");
+    }
+    if (event.isDeleted) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Event is already deleted");
+    }
+    event.isDeleted = true;
+    yield event.save();
+    return event;
+});
+const restoreMyEvent = (eventId, hostId) => __awaiter(void 0, void 0, void 0, function* () {
+    const event = yield event_model_1.Event.findById(eventId);
+    if (!event) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
+    }
+    if (event.hostId.toString() !== hostId) {
+        throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You can only restored your own events");
+    }
+    if (event.isDeleted === false) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Event is already restored");
+    }
+    event.isDeleted = false;
+    yield event.save();
+    return event;
+});
 const deleteMyEvent = (eventId, hostId) => __awaiter(void 0, void 0, void 0, function* () {
     const event = yield event_model_1.Event.findById(eventId);
     if (!event) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
     }
-    // ✅ Only host who created the event can delete
     if (event.hostId.toString() !== hostId) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You can only delete your own events");
     }
-    // Delete event image from Cloudinary if exists
     if (event.image) {
         yield (0, cloudinary_config_1.deleteImageFromCLoudinary)(event.image);
     }
-    // Delete event from DB
     yield event_model_1.Event.findByIdAndDelete(eventId);
     return { message: "Event deleted successfully" };
 });
@@ -215,7 +362,6 @@ const updateMyEvent = (eventId, payload, hostId) => __awaiter(void 0, void 0, vo
     if (!event) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Event not found");
     }
-    // ✅ Only host who created event can update
     if (event.hostId.toString() !== hostId) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You can only update your own events");
     }
@@ -256,8 +402,14 @@ exports.EventServices = {
     getAllEventTypes,
     getMyEvents,
     getAllEvents,
+    getDeletedEvents,
+    getMyDeletedEvents,
     getSingleEvent,
     deleteEvent,
+    softDeleteEventByAdmin,
+    restoreEventByAdmin,
+    softDeleteMyEvent,
+    restoreMyEvent,
     deleteMyEvent,
     updateEvent,
     updateMyEvent

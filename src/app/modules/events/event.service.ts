@@ -65,12 +65,10 @@ const createEvent = async (payload: Partial<IEvent>): Promise<IEvent> => {
 
 
 const getAllEventTypes = async (): Promise<string[]> => { 
-  const types = await Event.distinct("eventType");
-
+  const types = await Event.distinct("eventType"); 
   if (!types || types.length === 0) {
     throw new AppError(httpStatus.NOT_FOUND, "No event types found!");
-  }
-
+  } 
   return types;
 };
 
@@ -87,6 +85,52 @@ interface GetMyEventsQuery {
   [key: string]: any;
 }
 
+// const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
+//   if (!hostId) {
+//     throw new AppError(httpStatus.UNAUTHORIZED, "Host ID is required!");
+//   }
+//   const { searchTerm, sortBy, sortOrder, page = "1", limit = "10", ...filters } = query;
+//   const pageNum = parseInt(page, 10);
+//   const limitNum = parseInt(limit, 10);
+//   const skip = (pageNum - 1) * limitNum;
+//   // Base filter: only host's events
+//   const baseFilter: any = { hostId };
+//   // Search by searchTerm
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, "i"); // case-insensitive
+//     baseFilter.$or = eventSearchableFields.map((field) => ({
+//       [field]: searchRegex,
+//     }));
+//   }
+//   // Additional filters
+//   Object.keys(filters).forEach((key) => {
+//     baseFilter[key] = filters[key];
+//   });
+//   //  Sort
+//   let sortOption: any = { createdAt: -1 }; // default newest first
+//   if (sortBy) {
+//     sortOption = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+//   }
+//   // Fetch events with pagination
+//   const events = await Event.find(baseFilter)
+//     .populate({ path: "hostId", select: "-password -auths" })
+//     .sort(sortOption)
+//     .skip(skip)
+//     .limit(limitNum);
+//   // Total count for meta
+//   const total = await Event.countDocuments(baseFilter);
+//   const totalPages = Math.ceil(total / limitNum);
+
+//   const meta = {
+//     total,
+//     page: pageNum,
+//     limit: limitNum,
+//     totalPages,
+//   };
+//   return { meta, data: events };
+// };
+
+
 const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
   if (!hostId) {
     throw new AppError(httpStatus.UNAUTHORIZED, "Host ID is required!");
@@ -94,9 +138,9 @@ const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
   const { searchTerm, sortBy, sortOrder, page = "1", limit = "10", ...filters } = query;
   const pageNum = parseInt(page, 10);
   const limitNum = parseInt(limit, 10);
-  const skip = (pageNum - 1) * limitNum;
-  // Base filter: only host's events
-  const baseFilter: any = { hostId };
+  const skip = (pageNum - 1) * limitNum; 
+  const baseFilter: any = { hostId, isDeleted: false };
+
   // Search by searchTerm
   if (searchTerm) {
     const searchRegex = new RegExp(searchTerm, "i"); // case-insensitive
@@ -104,21 +148,25 @@ const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
       [field]: searchRegex,
     }));
   }
+
   // Additional filters
   Object.keys(filters).forEach((key) => {
     baseFilter[key] = filters[key];
   });
-  //  Sort
+
+  // Sort
   let sortOption: any = { createdAt: -1 }; // default newest first
   if (sortBy) {
     sortOption = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
   }
+
   // Fetch events with pagination
   const events = await Event.find(baseFilter)
     .populate({ path: "hostId", select: "-password -auths" })
     .sort(sortOption)
     .skip(skip)
     .limit(limitNum);
+
   // Total count for meta
   const total = await Event.countDocuments(baseFilter);
   const totalPages = Math.ceil(total / limitNum);
@@ -135,9 +183,8 @@ const getMyEvents = async (hostId: string, query: GetMyEventsQuery) => {
 
 
 
-
 const getAllEvents = async (query: Record<string, string>) => {
-  const queryBuilder = new QueryBuilder(Event.find().populate({
+  const queryBuilder = new QueryBuilder(Event.find({ isDeleted: false }).populate({
     path: "hostId",
     select: "-password -auths"
   }), query)
@@ -149,6 +196,78 @@ const getAllEvents = async (query: Record<string, string>) => {
     .pagination();
   const [data, meta] = await Promise.all([queryBuilder.build(), queryBuilder.getMeta()]);
   return { data, meta };
+};
+
+
+
+const getDeletedEvents = async (query: Record<string, any>) => {
+  const { searchTerm, page = 1, limit = 10 } = query;
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Base filter: only deleted events
+  const filter: any = { isDeleted: true };
+
+  // Search logic
+  if (searchTerm) {
+    const searchableFields = ["eventName", "description", "eventType"];
+    filter.$or = searchableFields.map((field) => ({
+      [field]: { $regex: searchTerm, $options: "i" },
+    }));
+  }
+
+  // Query execution
+  const data = await Event.find(filter)
+    .populate({ path: "hostId", select: "-password -auths" })
+    .sort("-createdAt") // Newest deleted first
+    .skip(skip)
+    .limit(limitNum);
+
+  // Meta data calculation
+  const total = await Event.countDocuments(filter);
+  const totalPage = Math.ceil(total / limitNum);
+
+  return {
+    data,
+    meta: { page: pageNum, limit: limitNum, total, totalPage },
+  };
+};
+
+
+
+
+
+const getMyDeletedEvents = async (hostId: string, query: Record<string, any>) => {
+  const { searchTerm, page = 1, limit = 10 } = query;
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Base filter: Host specific deleted events
+  const filter: any = { hostId, isDeleted: true };
+
+  // Search logic
+  if (searchTerm) {
+    const searchableFields = ["eventName", "description", "eventType"];
+    filter.$or = searchableFields.map((field) => ({
+      [field]: { $regex: searchTerm, $options: "i" },
+    }));
+  }
+
+  const data = await Event.find(filter)
+    .populate({ path: "hostId", select: "-password -auths" })
+    .sort("-createdAt")
+    .skip(skip)
+    .limit(limitNum);
+
+  const total = await Event.countDocuments(filter);
+  const totalPage = Math.ceil(total / limitNum);
+
+  return {
+    data,
+    meta: { page: pageNum, limit: limitNum, total, totalPage },
+  };
 };
 
 
@@ -181,25 +300,85 @@ const deleteEvent = async (eventId: string) => {
 };
 
 
+const softDeleteEventByAdmin = async (eventId: string): Promise<IEvent | null> => { 
+  const event = await Event.findById(eventId); 
+  if (!event) {
+    throw new AppError(httpStatus.NOT_FOUND, "Event not found");
+  } 
+  if (event.isDeleted) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Event is already deleted");
+  } 
+  event.isDeleted = true; 
+  await event.save();
+  return event;
+};
+
+
+const restoreEventByAdmin = async (eventId: string): Promise<IEvent | null> => { 
+  const event = await Event.findById(eventId); 
+  if (!event) {
+    throw new AppError(httpStatus.NOT_FOUND, "Event not found");
+  } 
+  if (event.isDeleted === false) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Event is already restored");
+  } 
+  event.isDeleted = false; 
+  await event.save();
+  return event;
+};
+
+
+
+const softDeleteMyEvent = async (eventId: string, hostId: string): Promise<IEvent | null> => {
+  const event = await Event.findById(eventId); 
+  if (!event) {
+    throw new AppError(httpStatus.NOT_FOUND, "Event not found");
+  } 
+  if (event.hostId.toString() !== hostId) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "You can only delete your own events");
+  } 
+  if (event.isDeleted) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Event is already deleted");
+  } 
+  event.isDeleted = true;
+  await event.save();
+
+  return event;
+};
+
+
+
+const restoreMyEvent = async (eventId: string, hostId: string): Promise<IEvent | null> => {
+  const event = await Event.findById(eventId); 
+  if (!event) {
+    throw new AppError(httpStatus.NOT_FOUND, "Event not found");
+  } 
+  if (event.hostId.toString() !== hostId) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "You can only restored your own events");
+  } 
+  if (event.isDeleted === false) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Event is already restored");
+  } 
+  event.isDeleted = false;
+  await event.save();
+
+  return event;
+};
+
+
 
 
 const deleteMyEvent = async (eventId: string, hostId: string) => {
   const event = await Event.findById(eventId);
   if (!event) {
     throw new AppError(httpStatus.NOT_FOUND, "Event not found");
-  }
-
-  // ✅ Only host who created the event can delete
+  } 
   if (event.hostId.toString() !== hostId) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You can only delete your own events");
-  }
-
-  // Delete event image from Cloudinary if exists
+  } 
   if (event.image) {
     await deleteImageFromCLoudinary(event.image);
-  }
-
-  // Delete event from DB
+  } 
   await Event.findByIdAndDelete(eventId);
 
   return { message: "Event deleted successfully" };
@@ -254,9 +433,7 @@ const updateMyEvent = async (eventId: string, payload: Partial<IEvent>, hostId: 
   const event = await Event.findById(eventId);
   if (!event) {
     throw new AppError(httpStatus.NOT_FOUND, "Event not found");
-  }
-
-  // ✅ Only host who created event can update
+  } 
   if (event.hostId.toString() !== hostId) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You can only update your own events");
   }
@@ -308,8 +485,14 @@ export const EventServices = {
   getAllEventTypes,
   getMyEvents,
   getAllEvents,
+  getDeletedEvents,
+  getMyDeletedEvents,
   getSingleEvent,
   deleteEvent,
+  softDeleteEventByAdmin,
+  restoreEventByAdmin,
+  softDeleteMyEvent,
+  restoreMyEvent,
   deleteMyEvent,
   updateEvent,
   updateMyEvent

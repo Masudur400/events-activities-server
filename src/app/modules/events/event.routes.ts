@@ -27,10 +27,47 @@ router.get("/my-events",
     checkAuth(Role.HOST),
     eventControllers.getMyEvents);
 
+router.get(
+    "/deleted-events",
+    checkAuth(Role.SUPER_ADMIN),
+    eventControllers.getDeletedEvents
+);
+
+
+router.get(
+    "/my-deleted-events",
+    checkAuth(Role.HOST),
+    eventControllers.getMyDeletedEvents
+);
+
 router.patch("/:id",
     checkAuth(Role.SUPER_ADMIN),
     multerUpload.single('file'),
     eventControllers.updateEvent);
+
+router.patch(
+    "/soft-delete/:id",  
+    checkAuth(Role.SUPER_ADMIN),
+    eventControllers.softDeleteEventByAdmin
+);
+
+router.patch(
+    "/restore/:id",  
+    checkAuth(Role.SUPER_ADMIN),
+    eventControllers.restoreEventByAdmin
+);
+
+router.patch(
+    "/my-event/soft-delete/:id",
+    checkAuth(Role.HOST),
+    eventControllers.softDeleteMyEvent
+);
+
+router.patch(
+    "/my-event/restore/:id",
+    checkAuth(Role.HOST),
+    eventControllers.restoreMyEvent
+);
 
 router.patch("/my-event/:id",
     checkAuth(Role.HOST, Role.SUPER_ADMIN),

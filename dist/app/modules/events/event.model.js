@@ -23,6 +23,7 @@ const eventSchema = new mongoose_1.Schema({
     },
     totalReviews: { type: Number, default: 0 },
     avgRating: { type: Number, default: 0 },
+    isDeleted: { type: Boolean, default: false }
 }, {
     timestamps: true,
     versionKey: false,

@@ -16,7 +16,13 @@ router.get("/all-events",
 // checkAuth(...Object.values(Role)),
 event_controller_1.eventControllers.getAllEvents);
 router.get("/my-events", (0, checkAuth_1.checkAuth)(user_interface_1.Role.HOST), event_controller_1.eventControllers.getMyEvents);
+router.get("/deleted-events", (0, checkAuth_1.checkAuth)(user_interface_1.Role.SUPER_ADMIN), event_controller_1.eventControllers.getDeletedEvents);
+router.get("/my-deleted-events", (0, checkAuth_1.checkAuth)(user_interface_1.Role.HOST), event_controller_1.eventControllers.getMyDeletedEvents);
 router.patch("/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.SUPER_ADMIN), multer_config_1.multerUpload.single('file'), event_controller_1.eventControllers.updateEvent);
+router.patch("/soft-delete/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.SUPER_ADMIN), event_controller_1.eventControllers.softDeleteEventByAdmin);
+router.patch("/restore/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.SUPER_ADMIN), event_controller_1.eventControllers.restoreEventByAdmin);
+router.patch("/my-event/soft-delete/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.HOST), event_controller_1.eventControllers.softDeleteMyEvent);
+router.patch("/my-event/restore/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.HOST), event_controller_1.eventControllers.restoreMyEvent);
 router.patch("/my-event/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.HOST, user_interface_1.Role.SUPER_ADMIN), multer_config_1.multerUpload.single('file'), event_controller_1.eventControllers.updateMyEvent);
 router.get("/:id", 
 // checkAuth(...Object.values(Role)),

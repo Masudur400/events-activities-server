@@ -22,6 +22,7 @@ const eventSchema = new Schema<IEvent>(
     },
     totalReviews: { type: Number, default: 0 },
     avgRating: { type: Number, default: 0 },
+    isDeleted: { type: Boolean, default: false }
   },
   {
     timestamps: true,

@@ -24,6 +24,7 @@ export interface IEvent {
   status: EventStatus;
   totalReviews?:number
   avgRating?: number
+  isDeleted?: boolean
   createdAt?: Date;
   updatedAt?: Date;
 }
